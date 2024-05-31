@@ -1,0 +1,164 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PDF File Manipulation API",
+    "description": "API for uploading PDF files, verifying checksums, and extracting attachments",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Home page",
+        "description": "The first page to be displayed",
+        "responses": {
+          "200": {
+            "description": "Home page content"
+          }
+        }
+      }
+    },
+    "/attach_files": {
+      "get": {
+        "summary": "Attachment page",
+        "description": "A form where the user can upload files",
+        "responses": {
+          "200": {
+            "description": "Attachment page content"
+          }
+        }
+      }
+    },
+    "/extract_files": {
+      "get": {
+        "summary": "Extraction page",
+        "description": "A form where the user can upload a file to extract its attachments",
+        "responses": {
+          "200": {
+            "description": "Extraction page content"
+          }
+        }
+      }
+    },
+    "/upload": {
+      "post": {
+        "summary": "Upload a PDF file with attachments",
+        "description": "Endpoint to upload a main PDF file and additional attachments, and verify their checksums",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "main_file": {
+                    "type": "file",
+                    "format": "binary",
+                    "description": "Main PDF file with attachments"
+                  },
+                  "attachments": {
+                    "type": "array",
+                    "items": {
+                      "type": "file",
+                      "format": "binary",
+                      "description": "Additional attachments to be appended to the PDF"
+                    }
+                  },
+                  "main_file_checksum": {
+                    "type": "string",
+                    "description": "Checksum of the main PDF file"
+                  },
+                  "attachments_checksums": {
+                    "type": "string",
+                    "description": "Comma-separated checksums of attachments"
+                  }
+                }
+              },
+              "encoding": {
+                "main_file": {
+                  "contentType": "application/pdf"
+                },
+                "attachments": {
+                  "contentType": "application/octet-stream"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF file with attachments successfully processed",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request: Checksum verification failed or missing parameters"
+          }
+        }
+      }
+    },
+    "/extract": {
+      "post": {
+        "summary": "Extract attachments from a PDF file",
+        "description": "Endpoint to extract attachments from a provided PDF file and verify its checksum",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "main_file": {
+                    "type": "file",
+                    "format": "binary",
+                    "description": "PDF file from which attachments are to be extracted"
+                  },
+                  "main_file_checksum": {
+                    "type": "string",
+                    "description": "Checksum of the main PDF file"
+                  }
+                }
+              },
+              "encoding": {
+                "main_file": {
+                  "contentType": "application/pdf"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Attachments extracted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request: Checksum verification failed or missing parameters"
+          }
+        }
+      }
+    }
+  }
+}

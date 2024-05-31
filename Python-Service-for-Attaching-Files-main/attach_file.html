@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html class="h-full bg-gray-900">
+<head>
+    <title>Document Uploader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
+    <style>
+        .custom-btn {
+            background-color: #4b5563;
+            color: #fff;
+        }
+        .custom-btn:hover {
+            background-color: #6b7280;
+        }
+    </style>
+</head>
+<body class="h-full">
+    <div class="flex flex-col items-center justify-center h-full">
+        <h1 class="text-3xl font-bold mb-6 text-white">Document Uploader</h1>
+        <form id="documentUploadForm" action="/upload" method="post" enctype="multipart/form-data" class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
+            <div class="mb-4">
+                <label for="main_document" class="block text-gray-300 font-bold mb-2">Main PDF Document:</label>
+                <input type="file" id="main_document" name="main_document" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-6">
+                <label for="additional_documents" class="block text-gray-300 font-bold mb-2">Add additional documents:</label>
+                <input type="file" id="additional_documents" name="additional_documents" multiple required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <input type="hidden" id="main_document_checksum" name="main_document_checksum">
+            <input type="hidden" id="additional_documents_checksums" name="additional_documents_checksums">
+            <div class="flex justify-center">
+                <button type="submit" class="custom-btn font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Upload</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("documentUploadForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var mainDocumentInput = document.getElementById('main_document');
+            var additionalDocuments = document.getElementById('additional_documents');
+            var mainDocument = mainDocumentInput.files[0];
+            var documentsList = [];
+            for (let i = 0; i < additionalDocuments.files.length; i++) {
+                documentsList.push(additionalDocuments.files[i]);
+            }
+            var reader = new FileReader();
+            var mainDocumentChecksum = null;
+            var additionalDocumentsChecksums = [];
+            
+            reader.onload = function(e) {
+                if (!mainDocumentChecksum) {
+                    mainDocumentChecksum = sha256(new Uint8Array(e.target.result));
+                    document.getElementById('main_document_checksum').value = mainDocumentChecksum;
+                } else {
+                    additionalDocumentsChecksums.push(sha256(new Uint8Array(e.target.result)));
+                }
+                
+                if (additionalDocumentsChecksums.length === documentsList.length) {
+                    document.getElementById('additional_documents_checksums').value = additionalDocumentsChecksums.join(',');
+                    event.target.submit();
+                } else {
+                    reader.readAsArrayBuffer(documentsList[additionalDocumentsChecksums.length]);
+                }
+            };
+            
+            reader.readAsArrayBuffer(mainDocument);
+        });
+    </script>
+</body>
+</html>

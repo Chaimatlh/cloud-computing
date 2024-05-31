@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html class="h-full bg-gray-900">
+<head>
+  <title>Attachment Extraction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
+</head>
+<body class="h-full">
+  <div class="flex flex-col items-center justify-center h-full">
+    <div class="bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
+      <h1 class="text-3xl font-bold mb-6 text-white">Extract Attachments</h1>
+      <form id="extractionForm" action="/extract" method="post" enctype="multipart/form-data" class="text-white">
+        <div class="mb-4">
+          <label for="main_file" class="block font-bold mb-2">PDF File:</label>
+          <input type="file" id="main_file" name="main_file" required class="shadow appearance-none border rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <input type="hidden" id="main_file_checksum" name="main_file_checksum">
+        <div class="flex justify-center">
+          <button type="submit" class="bg-blue-700 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Extract</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    document.getElementById("extractionForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      var mainFileInput = document.getElementById('main_file');
+      var mainFile = mainFileInput.files[0];
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var mainFileChecksum = sha256(new Uint8Array(e.target.result));
+        document.getElementById('main_file_checksum').value = mainFileChecksum;
+        document.getElementById("extractionForm").submit();
+      };
+      reader.readAsArrayBuffer(mainFile);
+    });
+  </script>
+</body>
+</html>
